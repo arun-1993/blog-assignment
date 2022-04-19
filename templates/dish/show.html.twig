@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<br />
+<div class="container text-center">
+    <h1 class="">{{ dish.name }}</h1>
+    <br />
+    <img src="{{ asset('images/' ~ dish.image) }}" alt="{{ dish.name }}" style="height: 720px" />
+    <br /><br />
+    <p>{{ dish.description }}</p>
+    <p>{{ dish.content }}</p>
+    <br />
+    <a href="{{ path('dish_list') }}" class="site-btn">Back</a>
+    <a href="" class="site-btn sb-c2">Order</a>
+</div>
+{% endblock %}
