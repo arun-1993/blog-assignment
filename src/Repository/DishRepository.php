@@ -45,6 +45,20 @@ class DishRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return Dish[]
+     */
+    public function getRecentDishes(): array
+    {
+        $entityManager = $this->getEntityManager();
+
+        $query = $entityManager->createQuery(
+            'SELECT dish FROM App\Entity\Dish dish ORDER BY dish.createdOn DESC'
+        );
+
+        return $query->setMaxResults(3)->getResult();
+    }
+
     // /**
     //  * @return Dish[] Returns an array of Dish objects
     //  */

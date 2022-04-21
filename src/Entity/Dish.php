@@ -48,6 +48,16 @@ class Dish
      */
     private $updatedOn;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="dishes")
+     */
+    private $category;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="dishes")
+     */
+    private $author;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -145,6 +155,30 @@ class Dish
     public function setImage(string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): self
+    {
+        $this->author = $author;
 
         return $this;
     }

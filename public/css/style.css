@@ -337,6 +337,10 @@ Header section
 .spacer-top {
 	padding-top: 150px;
 }
+
+.spacer-bottom {
+	padding-bottom: 50px;
+}
 /*------------------
 Hero section
  ---------------------*/

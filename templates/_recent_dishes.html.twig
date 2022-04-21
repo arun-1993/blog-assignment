@@ -1,0 +1,18 @@
+<table class="table table-borderless">
+	<tbody>
+		{% for dish in dishes %}
+		<td>
+			<div class="row">
+				<a href="{{ path('dish_single', {id: dish.id}) }}">
+					<img class="img-fluid img-thumbnail" src="{{ asset('images/' ~ dish.image) }}" alt="{{ dish.name }}" style="height: 120px; width: 90%" />
+				</a>
+			</div>
+			<div class="row">
+				<a href="{{ path('dish_single', {id: dish.id}) }}">
+					<h6>{{ dish.name }}</h6>
+				</a>
+			</div>
+		</td>
+		{% endfor %}
+	</tbody>
+</table>

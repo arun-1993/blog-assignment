@@ -1,16 +1,41 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<br />
 <div class="container text-center">
     <h1 class="">{{ dish.name }}</h1>
     <br />
+    <div class="row alert alert-secondary">
+        <div class="col-3 border-right">
+            <h6>Author : </h6> {{ dish.author }}
+        </div>
+        <div class="col-3 border-right">
+            <h6>Category : </h6> {{ dish.category }}
+        </div>
+        <div class="col-3 border-right">
+            <h6>Created On : </h6> {{ dish.createdOn|date("d/m/Y h:i a") }}
+        </div>
+        <div class="col-3">
+            <h6>Updated On : </h6> {{ dish.updatedOn|date("d/m/Y h:i a") }}
+        </div>
+    </div>
+    <br />
     <img src="{{ asset('images/' ~ dish.image) }}" alt="{{ dish.name }}" style="height: 720px" />
     <br /><br />
-    <p>{{ dish.description }}</p>
-    <p>{{ dish.content }}</p>
-    <br />
-    <a href="{{ path('dish_list') }}" class="site-btn">Back</a>
-    <a href="" class="site-btn sb-c2">Order</a>
+    <p class="text-justify">{{ dish.description }}</p>
+    <p class="text-justify">{{ dish.content }}</p>
+    <div class="spacer-bottom"></div>
+    <div class="row">
+        <div class="col-4">
+            <a href="{{ path('dish_list') }}" class="site-btn"><i class="fa fa-arrow-left"></i> View All</a>
+        </div>
+        {% if is_granted('ROLE_USER') and dish.author==app.user.username %}
+        <div class="col-4">
+            <a href="{{ path('dish_edit', {id: dish.id}) }}" class="site-btn sb-c2"><i class="fa fa-edit"></i> Edit</a>
+        </div>
+        <div class="col-4">
+            <a href="{{ path('dish_delete', {id: dish.id}) }}" class="site-btn sb-c2"><i class="fa fa-trash"></i> Delete</a>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

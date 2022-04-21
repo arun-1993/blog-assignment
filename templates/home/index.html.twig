@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <!-- Hero section -->
+	{# <section class="hero-section">
+		<div class="hero-slider owl-carousel">
+			<div class="hs-item">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="hs-text">
+								<h2><span>Featured Dish</span>!</h2>
+								<h4>{{ dish.name }}</h4>
+								<p>{{ dish.description }}</p>
+								<a href="" class="site-btn">Check it out!</a>
+								<a href="" class="site-btn sb-c2">Check it out!</a>
+							</div>
+						</div>
+						<div class="col-lg-6">
+							<div class="hs-text">
+								<img src="{{ asset('images/' ~ dish.image) }}" alt="{{ dish.name }}" style="height: 100%, width:100%">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section> #}
+	<!-- Hero section end -->
+	<div class="container">
+		<div class="row">
+			<div class="col-6">
+				<div class="row section-title">
+					<h2>Featured Dish!</h2>
+				</div>
+				<div class="row">
+					<p><h2>{{ dish.name }}</h2></p>
+					<p class="text-justify">{{ dish.description }}</p>
+					<a href="{{ path('dish_single', {id: dish.id}) }}" class="site-btn">Check it out!</a>
+				</div>
+			</div>
+			<div class="col-6">
+				<img class="img-thumbnail" src="{{ asset('images/' ~ dish.image) }}" alt="{{ dish.name }}">
+			</div>
+		</div>
+	</div>
+{% endblock %}

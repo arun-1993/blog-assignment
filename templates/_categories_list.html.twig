@@ -1,0 +1,3 @@
+{% for category in categories %}
+	<li><a href="{{ path('dish_list', {category: category.name|replace({' ':''})}) }}">{{ category.name }}</a></li>
+{% endfor %}

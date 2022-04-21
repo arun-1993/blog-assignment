@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Cusine Culture | Celebrating the Awesomeness of Food</title>
+	<title>Cuisine Culture | Celebrating the Awesomeness of Food</title>
 	<meta charset="UTF-8">
 	<meta name="description" content="SolMusic HTML Template">
 	<meta name="keywords" content="music, html">
@@ -37,38 +37,33 @@
 
 	<!-- Header section -->
 	<header class="header-section fixed-top clearfix">
-		<a href="" class="site-logo">
+		<a href="{{ path('home') }}" class="site-logo">
 			<img src="{{ asset('img/logo1.png') }}" alt="site logo">
 		</a>
 		<div class="header-right">
 			<div class="user-panel">
 				{% if is_granted('IS_AUTHENTICATED_FULLY') %}
-				<a href="" class="register">Log Out</a>
+				<a href="{{ path('app_logout') }}" class="register">Log Out</a>
 				{% else %}
-				<a href="" class="login">Log In</a>
+				<a href="{{ path('app_login') }}" class="login">Log In</a>
 				<span>|</span>
-				<a href="" class="register">Register</a>
+				<a href="{{ path('app_register') }}" class="register">Register</a>
 				{% endif %}
 			</div> 
 		</div>
 		<ul class="main-menu">
-			<li><a href="">Home</a></li>
-			<li><a href="">Blog Posts <i class="fa fa-angle-down"></i></a>
+			<li><a href="{{ path('home') }}">Home</a></li>
+			<li><a href="{{ path('dish_list') }}">Dishes <i class="fa fa-angle-down"></i></a>
 				<ul class="sub-menu">
-					<li><a href="">Drinks</a></li>
-					<li><a href="">Appetizers</a></li>
-					<li><a href="">Main Dish</a></li>
-					<li><a href="">Desserts</a></li>
+					{{ render(path('dish_cat_list')) }}
 				</ul>
 			</li>
 
 			{% if is_granted('IS_AUTHENTICATED_FULLY') %}
-			<li><a href="#">Welcome Username <i class="fa fa-angle-down"></i></a>
+			<li><a href="#">Welcome {{ app.user.username }} <i class="fa fa-angle-down"></i></a>
 				<ul class="sub-menu">
-					<li><a href="">View Profile</a></li>
-					<li><a href="">Create Post</a></li>
-					<li><a href="">View Posts</a></li>
-					<li><a href="">View Comments</a></li>
+					<li><a href="{{ path('dish_create') }}">Create Post</a></li>
+					<li><a href="{{ path('user_list') }}">View Posts</a></li>
 				</ul>
 			</li>
 			{% endif %}
@@ -80,6 +75,7 @@
     {% block body %}
         
     {% endblock %}
+	<div class="spacer-bottom"></div>
 	<!-- Intro section -->
 	<section class="intro-section spad">
 		<div class="container">
@@ -87,24 +83,12 @@
 			<div class="row">
 				<div class="col-lg-6">
 					<div class="section-title">
-						<h2>Recents Posts</h2>
+						<h2>Recents Dishes</h2>
 					</div>
+					<h5>Check out the most recent mouthwatering dishes posted by our users</h5>
 				</div>
 				<div class="col-lg-6">
-					<table>
-						<tr>
-						{% for post in recent_posts %}
-							<td>
-								<div class="row">
-									<img src="{{ asset('images/' ~ post.image) }}" alt="{{ post.name }}" style="height: 100px; width: 100px" />
-								</div>
-								<div class="row">
-									{{ post.name }}
-								</div>
-							</td>
-						{% endfor %}
-						</tr>
-					</table>
+					{{ render(path('dish_recent')) }}
 				</div>
 			</div>
 		</div>
@@ -121,20 +105,16 @@
 							<div class="footer-widget">
 								<h2>About us</h2>
 								<ul>
-									<li><a href="">Welcome</a></li>
-									<li><a href="">Menu Card</a></li>
-									<li><a href="">Order</a></li>
+									<li><a href="{{ path('home') }}">Home</a></li>
+									<li><a href="{{ path('about') }}">About Us</a></li>
 								</ul>
 							</div>
 						</div>
 						<div class="col-sm-4">
 							<div class="footer-widget">
-								<a href=""><h2>Blog Posts</h2></a>
+								<a href="{{ (path('dish_list')) }}"><h2>Dishes</h2></a>
 								<ul>
-									<li><a href="">Drink</a></li>
-									<li><a href="">Appetizers</a></li>
-									<li><a href="">Main Dish</a></li>
-									<li><a href="">Desserts</a></li>
+									{{ render(path('dish_cat_list')) }}
 								</ul>
 							</div>
 						</div>
@@ -143,14 +123,12 @@
 								{% if is_granted('IS_AUTHENTICATED_FULLY') %}
 								<h2>Account</h2>
 								<ul>
-									<li><a href="">View Profile</a></li>
-									<li><a href="">Create Post</a></li>
-									<li><a href="">View Posts</a></li>
-									<li><a href="">View Comments</a></li>
-									<li><a href="">Log Out</a></li>
+									<li><a href="{{ path('dish_create') }}">Create Post</a></li>
+									<li><a href="{{ path('user_list') }}">Your Posts</a></li>
+									<li><a href="{{ path('app_logout') }}">Log Out</a></li>
 								</ul>
 								{% else %}
-								<a href=""><h2>Log In</h2></a>	
+								<a href="{{ path('app_login') }}"><h2>Log In</h2></a>	
 								{% endif %}
 							</div>
 						</div>
