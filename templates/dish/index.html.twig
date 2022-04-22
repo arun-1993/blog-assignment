@@ -2,24 +2,18 @@
 
 {% block body %}
 
-	{% for message in app.flashes('order') %}
-	<div class="alert alert-success">
-		<h3>{{ message }}</h3>
-	</div>
-	{% endfor %}
-
     <section class="playlist-section spad">
 		<div class="container-fluid">
 			<div class="section-title">
 				<h2>Dishes</h2>
+				{{ form(filter) }}
 			</div>
 			<div class="container">
 				<ul class="playlist-filter controls">
 					<li class="filter " data-filter="all">All Dishes</li>
-					<li class="filter" data-filter=".Drinks">Drinks</li>
-					<li class="filter" data-filter=".Appetizers">Appetizers</li>
-					<li class="filter" data-filter=".MainDish">Main Dish</li>
-					<li class="filter" data-filter=".Desserts">Desserts</li>
+					{% for cat in cat_list %}
+					<li class="filter" data-filter=".{{ cat.name|replace({' ':''}) }}">{{ cat.name }}</li>
+					{% endfor %}
 				</ul>
 			</div>
 			<div class="clearfix"></div>
@@ -34,7 +28,6 @@
 							<img class="h-50 border" src="{{ asset('images/' ~ dish.image) }}" alt="{{ dish.name }}" >
 						</a>
                         <p>
-							{# Item {{ dish.id }} #}
 							<a class="btn btn-outline-danger btn-sm" href="{{ path('dish_single',{id: dish.id}) }}" role="button">Read More</a>
 						</p>
 						<br />

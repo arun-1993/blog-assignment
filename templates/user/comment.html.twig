@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        <h2>Your Comments</h2>
+        <br />
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Dish</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if comments|length == 0 %}
+                <tr><td colspan="3"><h5 class="text-center">You have no comments yet!</h5></td></tr>
+            {% else %}
+                {% for comment in comments %}
+                <tr>
+                    <td>{{ comment.dish }}</td>
+                    <td>{{ comment.comment }}</td>
+                    <td>{{ comment.createdOn|date("d-m-Y h:i a") }}</td>
+                    {# <td>{{ comment.updatedOn|date("d-m-Y h:i a") }}</td> #}
+                </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

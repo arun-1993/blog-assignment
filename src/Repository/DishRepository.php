@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * @method Dish|null find($id, $lockMode = null, $lockVersion = null)
@@ -50,13 +51,26 @@ class DishRepository extends ServiceEntityRepository
      */
     public function getRecentDishes(): array
     {
-        $entityManager = $this->getEntityManager();
-
-        $query = $entityManager->createQuery(
+        $query = $this->_em->createQuery(
             'SELECT dish FROM App\Entity\Dish dish ORDER BY dish.createdOn DESC'
         );
 
         return $query->setMaxResults(3)->getResult();
+    }
+
+    /**
+     * @return Dish[]
+     */
+    public function getByDate($date): array
+    {
+        $query = $this->_em
+            ->createQuery(
+                'SELECT dish FROM App\Entity\Dish dish WHERE dish.createdOn = :date ORDER BY dish.name ASC'
+            )
+            ->setParameter('date', $date)
+        ;
+
+        return $query->getResult();
     }
 
     // /**

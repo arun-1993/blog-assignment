@@ -3,14 +3,17 @@
 namespace App\Controller;
 
 use App\Entity\Category;
+use App\Entity\Comment;
 use App\Entity\Dish;
 use App\Entity\User;
 use App\Form\DishType;
 use App\Repository\CategoryRepository;
+use App\Repository\CommentRepository;
 use App\Repository\DishRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -18,6 +21,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 
 /**
  * @Route("/dish", name="dish_")
@@ -27,23 +31,73 @@ class DishController extends AbstractController
     /**
      * @Route("/view/{id}", name="single", requirements={"id"="\d+"})
      */
-    public function show(Dish $dish)
+    public function show(Dish $dish, CommentRepository $commentRepository, Request $request, ManagerRegistry $doctrine)
     {
+        $comment_form = $this->createFormBuilder()
+            ->add('comment', TextareaType::class, [
+                'label' => 'Enter Your Comment',
+                'required' => true,
+            ])
+            ->add('submit', SubmitType::class, ['label' => 'Comment'])
+            ->getForm()
+        ;
+
+        $comment_form->handleRequest($request);
+
+        if($comment_form->isSubmitted() && $comment_form->isValid())
+        {
+            $comment = new Comment();
+            $text = $comment_form->get('comment')->getData();
+            
+            $comment->setDish($dish);
+            $comment->setUser($this->getUser());
+            $comment->setComment($text);
+
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($comment);
+            $entityManager->flush();
+        }
+
+        $comments = $commentRepository->findBy(['dish' => $dish->getId()], ['createdOn' => 'DESC']);
+
         return $this->render('dish/show.html.twig', [
-            'dish' => $dish
+            'dish' => $dish,
+            'comments' => $comments,
+            'comment_form' => $comment_form->createView(),
         ]);
     }
 
     /**
      * @Route("/view/{category}", name="list")
      */
-    public function list(DishRepository $dishRepository, string $category = 'all'): Response
+    public function list(DishRepository $dishRepository, CategoryRepository $categoryRepository, Request $request, string $category = 'all'): Response
     {
-        $dishes = $dishRepository->findAll();
+        $dishes = $dishRepository->findBy([], ['name' => 'ASC']);
+        $categories = $categoryRepository->findBy([], ['id' => 'ASC']);
+
+        $filter = $this->createFormBuilder()
+            ->add('createdOn', DateType::class, [
+                'widget' => 'choice',
+                'format' => 'yyyy-M-d'
+            ])
+            ->add('search', SubmitType::class)
+            ->getForm()
+        ;
+
+        $filter->handleRequest($request);
+
+        if($filter->isSubmitted() && $filter->isValid())
+        {
+            // $search = $filter->get('createdOn')->getData();
+            // $dishes = $dishRepository->getByDate($search);
+            // dump($search, $dishes);
+        }
 
         return $this->render('dish/index.html.twig', [
             'dishes' => $dishes,
-            'category' => $category
+            'category' => $category,
+            'cat_list' => $categories,
+            'filter' => $filter->createView(),
         ]);
     }
 
@@ -211,7 +265,7 @@ class DishController extends AbstractController
     /**
      * @Route("/cat_list", name="cat_list")
      */
-    public function catList(CategoryRepository $categoryRepository, ManagerRegistry $doctrine): Response
+    public function catList(CategoryRepository $categoryRepository): Response
     {
         $categories = $categoryRepository->findBy([], ['id' => 'ASC']);
 

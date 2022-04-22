@@ -63,7 +63,8 @@
 			<li><a href="#">Welcome {{ app.user.username }} <i class="fa fa-angle-down"></i></a>
 				<ul class="sub-menu">
 					<li><a href="{{ path('dish_create') }}">Create Post</a></li>
-					<li><a href="{{ path('user_list') }}">View Posts</a></li>
+					<li><a href="{{ path('user_list') }}">Your Posts</a></li>
+					<li><a href="{{ path('user_comments') }}">Your Comments</a></li>
 				</ul>
 			</li>
 			{% endif %}
@@ -125,6 +126,7 @@
 								<ul>
 									<li><a href="{{ path('dish_create') }}">Create Post</a></li>
 									<li><a href="{{ path('user_list') }}">Your Posts</a></li>
+									<li><a href="{{ path('user_comments') }}">Your Comments</a></li>
 									<li><a href="{{ path('app_logout') }}">Log Out</a></li>
 								</ul>
 								{% else %}

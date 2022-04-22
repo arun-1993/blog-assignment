@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\CommentRepository;
 use App\Repository\DishRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +22,18 @@ class UserController extends AbstractController
 
         return $this->render('user/index.html.twig', [
             'dishes' => $dishes
+        ]);
+    }
+
+    /**
+     * @Route("/comments", name="comments")
+     */
+    public function comments(CommentRepository $commentRepository): Response
+    {
+        $comments = $commentRepository->findBy(['user' => $this->getUser()->getId()]);
+
+        return $this->render('user/comment.html.twig', [
+            'comments' => $comments
         ]);
     }
 }

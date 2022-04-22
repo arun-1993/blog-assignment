@@ -2,7 +2,7 @@
 
 {% block body %}
 <div class="container text-center">
-    <h1 class="">{{ dish.name }}</h1>
+    <h1>{{ dish.name }}</h1>
     <br />
     <div class="row alert alert-secondary">
         <div class="col-3 border-right">
@@ -36,6 +36,32 @@
             <a href="{{ path('dish_delete', {id: dish.id}) }}" class="site-btn sb-c2"><i class="fa fa-trash"></i> Delete</a>
         </div>
         {% endif %}
+    </div>
+    <div class="spacer-bottom"></div>
+    <h2>Comments</h2>
+    <div class="text-left">
+    {% if is_granted('ROLE_USER') %}
+        {{ form(comment_form) }}
+    {% else %}
+        <div class="spacer-bottom"></div>
+        <div class="alert alert-info text-center">
+            You must be logged in to post a comment
+        </div>
+    {% endif %}
+        
+    {% if comments|length == 0 %}
+        <div class="alert alert-success" role="alert">
+            <div class="row"><h5>There are no comments for this post yet. Be the first one to comment!</h5></div>
+        </div>
+    {% else %}
+        {% for comment in comments %}
+        <div class="alert alert-success" role="alert">
+            <div class="row"><h5 class="mb-2">{{ comment.user }}</h5></div>
+            <div class="row mb-2">{{ comment.comment }}</div>
+            <div class="row"><small>Commented On : {{ comment.createdOn|date("d M, Y - h:i a") }}</small></div>
+        </div>
+        {% endfor %}
+    {% endif %}
     </div>
 </div>
 {% endblock %}
