@@ -14,13 +14,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationController extends AbstractController
 {
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasherInterface, ManagerRegistry $doctrine): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasherInterface, ManagerRegistry $doctrine, ValidatorInterface $validatorInterface): Response
     {
         $form = $this->createFormBuilder()
             ->add('username', TextType::class, [
@@ -55,21 +56,36 @@ class RegistrationController extends AbstractController
             {
 
                 $user = new User();
+
                 $user->setUsername($input['username']);
-                
                 $user->setPassword($userPasswordHasherInterface->hashPassword($user, $input['password']));
+                $user->setRawPassword($input['password']);
+
+                $errors = $validatorInterface->validate($user);
                 
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($user);
-                $entityManager->flush();
-                
-                $this->addFlash('success', 'Registration Successful');
-                return $this->redirect($this->generateUrl('app_login'));
+                if(count($errors) > 0)
+                {
+                    return $this->render('registration/index.html.twig', [
+                        'registration' => $form->createView(),
+                        'errors' => $errors,
+                    ]);
+                }
+
+                else
+                {
+                    $entityManager = $doctrine->getManager();
+                    $entityManager->persist($user);
+                    $entityManager->flush();
+
+                    $this->addFlash('success', 'Registration Successful');
+                    return $this->redirect($this->generateUrl('app_login'));
+                }
             }
         }
             
         return $this->render('registration/index.html.twig', [
             'registration' => $form->createView(),
+            'errors' => null,
         ]);
     }
 }

@@ -7,7 +7,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * @method Dish|null find($id, $lockMode = null, $lockVersion = null)
@@ -65,9 +64,10 @@ class DishRepository extends ServiceEntityRepository
     {
         $query = $this->_em
             ->createQuery(
-                'SELECT dish FROM App\Entity\Dish dish WHERE dish.createdOn = :date ORDER BY dish.name ASC'
+                'SELECT dish FROM App\Entity\Dish dish WHERE dish.createdOn >= :date_start AND dish.createdOn <= :end_date ORDER BY dish.name ASC'
             )
-            ->setParameter('date', $date)
+            ->setParameter('date_start', $date->format('Y-m-d 00:00:00'))
+            ->setParameter('end_date', $date->format('Y-m-d 23:59:59'))
         ;
 
         return $query->getResult();

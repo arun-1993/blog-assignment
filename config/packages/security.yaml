@@ -35,7 +35,7 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/profile, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/user, roles: ROLE_USER }
         # - { path: ^/dish_create, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/dish_delete, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/dish_edit, roles: IS_AUTHENTICATED_FULLY }

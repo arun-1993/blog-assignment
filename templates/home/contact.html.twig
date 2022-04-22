@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <section class="contact-section">
+		<div class="container-fluid">
+            {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <h3>{{ message }}</h3>
+            </div>
+            {% endfor %}
+			<div class="row">
+				<div class="col-lg-6 p-0">
+					<div class="map">
+                        <img src="{{ asset('images/contact.jpg') }}" style="height: 100%" />
+                    </div>
+				</div>
+				<div class="col-lg-6 p-0">
+					<div class="contact-warp">
+						<div class="section-title mb-0">
+							<h2>Contact Us</h2>
+						</div>
+						<p>You can use our contact form to get in touch with our qualified service staff. It doesn't matter if something is missing or if there are requests for new features. Praise, suggestions and criticism are also welcome. Do not hesitate to contact us.</p>
+                        {{ form(form) }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+{% endblock %}

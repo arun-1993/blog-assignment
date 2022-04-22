@@ -1,0 +1,10 @@
+{% apply inline_css(source('@css/bootstrap.min.css')) %}
+<div class="container text-justify">
+    <p>Dear Cuisine Culture,</p>
+
+    <p>{{ message }}</p>
+
+    <p>From {{ name }},</p>
+    <p>Email : {{ user_email }}</p>
+</div>
+{% endapply %}

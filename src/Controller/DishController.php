@@ -56,6 +56,8 @@ class DishController extends AbstractController
             $entityManager = $doctrine->getManager();
             $entityManager->persist($comment);
             $entityManager->flush();
+
+            return $this->redirect($this->generateUrl('dish_single', ['id' => $dish->getId()]));
         }
 
         $comments = $commentRepository->findBy(['dish' => $dish->getId()], ['createdOn' => 'DESC']);
@@ -88,9 +90,8 @@ class DishController extends AbstractController
 
         if($filter->isSubmitted() && $filter->isValid())
         {
-            // $search = $filter->get('createdOn')->getData();
-            // $dishes = $dishRepository->getByDate($search);
-            // dump($search, $dishes);
+            $search = $filter->get('createdOn')->getData();
+            $dishes = $dishRepository->getByDate($search);
         }
 
         return $this->render('dish/index.html.twig', [

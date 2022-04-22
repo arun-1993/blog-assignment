@@ -17,7 +17,7 @@
 				</ul>
 			</div>
 			<div class="clearfix"></div>
-			<div class="row playlist-area" id="Container">
+			<div class="row playlist-area" id="">
 
             {% for dish in dishes %}
 				<div class="mix col-lg-3 col-md-4 col-sm-6 {{ dish.category|replace({' ':''}) }}">
@@ -31,6 +31,7 @@
 							<a class="btn btn-outline-danger btn-sm" href="{{ path('dish_single',{id: dish.id}) }}" role="button">Read More</a>
 						</p>
 						<br />
+						<div class="text-justify">{{ dish.description|slice(0, 200) }}</div>
 					</div>
 				</div>
             {% endfor %}
