@@ -26,6 +26,29 @@ class Information
         $dish_count = $this->dishRepository->count([]);
         $comment_count = $this->commentRepository->count([]);
 
-        return array($user_count, $category_count, $dish_count, $comment_count);
+        $output = [
+            "Users : $user_count",
+            "Categories : $category_count",
+            "Dishes : $dish_count",
+            "Comments : $comment_count",
+        ];
+
+        return $output;
+    }
+
+    public function user($user)
+    {
+        $user_id = $this->userRepository->findOneBy(['username' => $user])->getId();
+
+        $dish_count = $this->dishRepository->count(['author' => $user_id]);
+        $comment_count = $this->commentRepository->count(['user' => $user_id]);
+
+        $output = [
+            "Name : $user",
+            "Dishes : $dish_count",
+            "Comments : $comment_count",
+        ];
+
+        return $output;
     }
 }
