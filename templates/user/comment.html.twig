@@ -2,6 +2,24 @@
 
 {% block body %}
     <div class="container">
+        {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Yay!</strong> {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Oops!</strong> {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        
         <h2>Your Comments</h2>
         <br />
         <table class="table table-striped">
@@ -10,18 +28,23 @@
                     <th>Dish</th>
                     <th>Comment</th>
                     <th>Date</th>
+                    <th>Update</th>
+                    <th class="text-center">Edit</th>
+                    <th class="text-center">Delete</th>
                 </tr>
             </thead>
             <tbody>
             {% if comments|length == 0 %}
-                <tr><td colspan="3"><h5 class="text-center">You have no comments yet!</h5></td></tr>
+                <tr><td colspan="6"><h5 class="text-center">You have no comments yet!</h5></td></tr>
             {% else %}
                 {% for comment in comments %}
                 <tr>
                     <td>{{ comment.dish }}</td>
                     <td>{{ comment.comment }}</td>
-                    <td>{{ comment.createdOn|date("d-m-Y h:i a") }}</td>
-                    {# <td>{{ comment.updatedOn|date("d-m-Y h:i a") }}</td> #}
+                    <td>{{ comment.createdOn|date }}</td>
+                    <td>{{ comment.updatedOn|date }}</td>
+                    <td class="text-center" title="Edit Comment"><a href="{{ path('user_comment_edit', {id: comment.id}) }}"><i class="fa fa-edit"></i></a></td>
+                    <td class="text-center" title="Delete Comment"><a href="{{ path('user_comment_delete', {id: comment.id}) }}"><i class="fa fa-trash"></i></a></td>
                 </tr>
                 {% endfor %}
             {% endif %}

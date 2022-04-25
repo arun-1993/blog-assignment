@@ -78,11 +78,12 @@ class DishController extends AbstractController
         $categories = $categoryRepository->findBy([], ['id' => 'ASC']);
 
         $filter = $this->createFormBuilder()
-            ->add('createdOn', DateType::class, [
-                'widget' => 'choice',
-                'format' => 'yyyy-M-d'
+            ->add('date_filter', DateType::class, [
+                'widget' => 'single_text',
+                'required' => true,
+                'label' => 'Date',
             ])
-            ->add('search', SubmitType::class)
+            ->add('filter_submit', SubmitType::class, ['label' => 'Filter'])
             ->getForm()
         ;
 
@@ -90,7 +91,7 @@ class DishController extends AbstractController
 
         if($filter->isSubmitted() && $filter->isValid())
         {
-            $search = $filter->get('createdOn')->getData();
+            $search = $filter->get('date_filter')->getData();
             $dishes = $dishRepository->getByDate($search);
         }
 
@@ -100,6 +101,14 @@ class DishController extends AbstractController
             'cat_list' => $categories,
             'filter' => $filter->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/search/{search}", name="search")
+     */
+    public function search(DishRepository $dishRepository, CategoryRepository $categoryRepository, string $search = ''): Response
+    {
+        return new Response($search);
     }
 
     /**
@@ -272,6 +281,39 @@ class DishController extends AbstractController
 
         return $this->render('_categories_list.html.twig', [
             'categories' => $categories
+        ]);
+    }
+
+    /**
+     * @Route("/search_bar", name="search_bar")
+     */
+    public function search_bar(Request $request): Response
+    {
+        $search = $this->createFormBuilder()
+            ->add('general_search', TextType::class, [
+                'label' => false,
+                'required' => true,
+                'attr' => [
+                    'placeholder' => 'Search',
+                    'style' => 'width: 200px'
+                ],
+            ])
+            ->add('search_submit', SubmitType::class, [
+                'label' => 'Search',
+            ])
+            ->getForm()
+        ;
+
+        $search->handleRequest($request);
+
+        if($search->isSubmitted() && $search->isValid())
+        {
+            dump($search);
+            return $this->redirectToRoute('dish_search');
+        }
+
+        return $this->render('_search_dishes.html.twig', [
+            'search' => $search->createView(),
         ]);
     }
 }
