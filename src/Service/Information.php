@@ -39,13 +39,13 @@ class Information
     public function user($user)
     {
         $user_id = $this->userRepository->findOneBy(['username' => $user])->getId();
-
+        $category_count = count($this->dishRepository->distinctCategory($user_id));
         $dish_count = $this->dishRepository->count(['author' => $user_id]);
         $comment_count = $this->commentRepository->count(['user' => $user_id]);
 
         $output = [
             "Name : $user",
-            "Dishes : $dish_count",
+            "Dishes : $dish_count dishes in $category_count different categories",
             "Comments : $comment_count",
         ];
 

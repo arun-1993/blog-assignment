@@ -73,6 +73,21 @@ class DishRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    /**
+     * @return Dish[]
+     */
+    public function distinctCategory($author): array
+    {
+        $query = $this->_em
+            ->createQuery(
+                'SELECT DISTINCT(dish.category) FROM App\Entity\Dish dish WHERE dish.author = :author'
+            )
+            ->setParameter('author', $author)
+        ;
+
+        return $query->getResult();
+    }
+
     // /**
     //  * @return Dish[] Returns an array of Dish objects
     //  */
