@@ -28,9 +28,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function add(User $entity, bool $flush = true): void
+    public function add(User $user, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this->_em->persist($user);
         if ($flush) {
             $this->_em->flush();
         }

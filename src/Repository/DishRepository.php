@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Comment;
 use App\Entity\Dish;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -25,9 +27,12 @@ class DishRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function add(Dish $entity, bool $flush = true): void
+    public function add(Dish $dish, User $author, $image, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $dish->setAuthor($author);
+        $dish->setImage($image);
+
+        $this->_em->persist($dish);
         if ($flush) {
             $this->_em->flush();
         }
@@ -37,9 +42,34 @@ class DishRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function remove(Dish $entity, bool $flush = true): void
+    public function edit(Dish $dish, $input, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        if(isset($input['image']))
+        {
+            $dish->setImage($input['image']);
+        }
+        
+        $dish->setName($input['name']);
+        $dish->setCategory($input['category']);
+        $dish->setDescription($input['description']);
+        $dish->setContent($input['content']);
+        $dish->setAuthor($input['author']);
+
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function remove(Dish $dish, bool $flush = true): void
+    {
+        $commentRepository = $this->_em->getRepository(Comment::class);
+        $commentRepository->removeAll($commentRepository->findBy(['dish' => $dish->getId()]));
+
+        $this->_em->remove($dish);
         if ($flush) {
             $this->_em->flush();
         }

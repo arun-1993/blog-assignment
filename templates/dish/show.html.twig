@@ -22,7 +22,7 @@
     <img src="{{ asset('images/' ~ dish.image) }}" alt="{{ dish.name }}" style="height: 720px" />
     <br /><br />
     <p class="text-justify">{{ dish.description }}</p>
-    <p class="text-justify">{{ dish.content }}</p>
+    <p class="text-justify">{{ dish.content|raw }}</p>
     <div class="spacer-bottom"></div>
     <div class="row">
         <div class="col-4">

@@ -11,6 +11,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\CommentRepository;
 use App\Repository\DishRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -21,7 +22,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 
 /**
  * @Route("/dish", name="dish_")
@@ -31,14 +31,18 @@ class DishController extends AbstractController
     /**
      * @Route("/view/{id}", name="single", requirements={"id"="\d+"})
      */
-    public function show(Dish $dish, CommentRepository $commentRepository, Request $request, ManagerRegistry $doctrine)
+    public function show(Dish $dish, CommentRepository $commentRepository, Request $request)
     {
         $comment_form = $this->createFormBuilder()
             ->add('comment', TextareaType::class, [
                 'label' => 'Enter Your Comment',
                 'required' => true,
+                'attr' => [
+                    'rows' => 3,
+                    'maxlength' => 65535,
+                ],
             ])
-            ->add('submit', SubmitType::class, ['label' => 'Comment'])
+            ->add('submit', SubmitType::class, ['label' => 'Post Comment'])
             ->getForm()
         ;
 
@@ -47,17 +51,14 @@ class DishController extends AbstractController
         if($comment_form->isSubmitted() && $comment_form->isValid())
         {
             $comment = new Comment();
-            $text = $comment_form->get('comment')->getData();
             
-            $comment->setDish($dish);
-            $comment->setUser($this->getUser());
-            $comment->setComment($text);
+            $input['comment'] = $comment_form->get('comment')->getData();;
+            $input['dish'] = $dish;
+            $input['user'] = $this->getUser();
+            
+            $commentRepository->add($comment, $input);
 
-            $entityManager = $doctrine->getManager();
-            $entityManager->persist($comment);
-            $entityManager->flush();
-
-            return $this->redirect($this->generateUrl('dish_single', ['id' => $dish->getId()]));
+            return $this->redirectToRoute('dish_single', ['id' => $dish->getId()]);
         }
 
         $comments = $commentRepository->findBy(['dish' => $dish->getId()], ['createdOn' => 'DESC']);
@@ -104,20 +105,10 @@ class DishController extends AbstractController
     }
 
     /**
-     * @Route("/search/{search}", name="search")
-     */
-    public function search(DishRepository $dishRepository, CategoryRepository $categoryRepository, string $search = ''): Response
-    {
-        return new Response($search);
-    }
-
-    /**
      * @Route("/create", name="create")
      */
-    public function create(Request $request, ManagerRegistry $doctrine): Response
+    public function create(Request $request, ManagerRegistry $doctrine, DishRepository $dishRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-
         $dish = new Dish();
 
         $form = $this->createForm(DishType::class, $dish);
@@ -127,10 +118,11 @@ class DishController extends AbstractController
         if($form->isSubmitted() && $form->isValid())
         {
             $image = $form->get('image')->getData();
+            $allowed_types = array('image/gif', 'image/jpeg', 'image/png');
 
-            if($image)
+            if($image && in_array($image->getMimeType(), $allowed_types))
             {
-                $file_name = md5(uniqid()). '.'. $image->guessClientExtension();
+                $file_name = md5(uniqid()). '.'. $image->guessExtension();
                 
                 $image->move(
                     $this->getParameter('images_folder'),
@@ -141,18 +133,15 @@ class DishController extends AbstractController
             else
             {
                 $file_name = 'default.png';
+                $this->addFlash('error', 'There was no image or image type was not supported. So the default image was chosen.');
             }
 
             $author = $doctrine->getRepository(User::class)->find($this->getUser()->getId());
-            $dish->setAuthor($author);
-            $dish->setImage($file_name);
 
-            $entityManager = $doctrine->getManager();
-            $entityManager->persist($dish);
-            $entityManager->flush();
-
+            $dishRepository->add($dish, $author, $file_name);
+            
             $this->addFlash('success', 'Dish created successfully!');
-            return $this->redirect($this->generateUrl('user_list'));
+            return $this->redirectToRoute('user_list');
         }
 
         return $this->render('dish/create.html.twig', [
@@ -163,48 +152,56 @@ class DishController extends AbstractController
     /**
      * @Route("/edit/{id}", name="edit")
      */
-    public function edit(Dish $dish, Request $request, ManagerRegistry $doctrine): Response
+    public function edit(Dish $dish, Request $request, DishRepository $dishRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-
-        if($dish->getAuthor()->getId() != $this->getUser()->getId())
+        if($dish->getAuthor() != $this->getUser())
         {
             $this->addFlash('error', 'You do not have permission to edit this dish!');
-            return $this->redirect($this->generateUrl('user_list'));
+            return $this->redirectToRoute('user_list');
         }
 
         $form = $this->createFormBuilder()
             ->add('name', TextType::class, [
-                'empty_data' => $dish->getName(),
+                'label' => 'Title',
+                'attr' => ['maxlength' => 255],
                 'data' => $dish->getName()
             ])
             ->add('category', EntityType::class,[
                 'class' => Category::class,
-                'empty_data' => $dish->getCategory(),
                 'data' => $dish->getCategory()
             ])
             ->add('image', FileType::class, [
                 'required' => false,
             ])
             ->add('description', TextareaType::class, [
-                'empty_data' => $dish->getDescription(),
+                'label' => 'Excerpt (A short description)',
+                'attr' => [
+                    'rows' => 5,
+                    'maxlength' => 2000,
+                ],
                 'data' => $dish->getDescription()
             ])
-            ->add('content', TextareaType::class, [
-                'empty_data' => $dish->getContent(),
-                'data' => $dish->getContent()
+            ->add('content', CKEditorType::class, [
+                'attr' => [
+                    'rows' => 10,
+                    'maxlength' => 4294967295,
+                ],
+                'data' => $dish->getContent(),
             ])
-            ->add('update', SubmitType::class)
+            ->add('update', SubmitType::class, ['label' => 'Update Dish'])
             ->getForm()
         ;
+
+        // $form = $this->createForm(DishType::class, $dish);
 
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid())
         {
             $image = $form->get('image')->getData();
+            $allowed_types = array('image/gif', 'image/jpeg', 'image/png');
 
-            if($image)
+            if($image && in_array($image->getMimeType(), $allowed_types))
             {
                 $file_name = md5(uniqid()). '.'. $image->guessClientExtension();
                 
@@ -213,23 +210,16 @@ class DishController extends AbstractController
                     $file_name
                 );
 
-                $dish->setImage($file_name);
+                $input['image'] = $file_name;
             }
 
             $input = $form->getData();
-            $author = $doctrine->getRepository(User::class)->find($this->getUser()->getId());
-            
-            $dish->setName($input['name']);
-            $dish->setCategory($input['category']);
-            $dish->setDescription($input['description']);
-            $dish->setContent($input['content']);
-            $dish->setAuthor($author);
+            $input['author'] = $this->getUser();
 
-            $entityManager = $doctrine->getManager();
-            $entityManager->flush();
+            $dishRepository->edit($dish, $input);
 
             $this->addFlash('success', 'Dish edited successfully!');
-            return $this->redirect($this->generateUrl('user_list'));
+            return $this->redirectToRoute('user_list');
         }
 
         return $this->render('dish/create.html.twig', [
@@ -240,24 +230,23 @@ class DishController extends AbstractController
     /**
      * @Route("/delete/{id}", name="delete")
      */
-    public function delete(Dish $dish, ManagerRegistry $doctrine): Response
+    public function delete(Dish $dish, DishRepository $dishRepository, ManagerRegistry $doctrine): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
+        // $this->denyAccessUnlessGranted('ROLE_USER');
 
-        if($dish->getAuthor()->getId() != $this->getUser()->getId())
+        if($dish->getAuthor() != $this->getUser())
         {
             $this->addFlash('error', 'You do not have permission to delete this dish!');
         }
         
         else
         {
-            $entityManager = $doctrine->getManager();
-            $entityManager->remove($dish);
-            $entityManager->flush();
+            $dishRepository->remove($dish);
+
             $this->addFlash('success', 'Dish removed successfully!');
         }
         
-        return $this->redirect($this->generateUrl('user_list'));
+        return $this->redirectToRoute('user_list');
     }
 
     /**
@@ -315,5 +304,13 @@ class DishController extends AbstractController
         return $this->render('_search_dishes.html.twig', [
             'search' => $search->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/search/{search}", name="search")
+     */
+    public function search(DishRepository $dishRepository, CategoryRepository $categoryRepository, string $search = ''): Response
+    {
+        return new Response($search);
     }
 }

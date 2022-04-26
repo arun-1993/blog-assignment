@@ -35,7 +35,7 @@ class UserController extends AbstractController
      */
     public function comments(CommentRepository $commentRepository): Response
     {
-        $comments = $commentRepository->findBy(['user' => $this->getUser()->getId()]);
+        $comments = $commentRepository->findBy(['user' => $this->getUser()]);
 
         return $this->render('user/comment.html.twig', [
             'comments' => $comments
@@ -45,16 +45,21 @@ class UserController extends AbstractController
     /**
      * @Route("/comments/edit/{id}", name="comment_edit")
      */
-    public function comment_edit(Comment $comment, Request $request, ManagerRegistry $doctrine): Response
+    public function comment_edit(Comment $comment, Request $request, CommentRepository $commentRepository): Response
     {
-        if($comment->getUser()->getId() != $this->getUser()->getId())
+        if($comment->getUser() != $this->getUser())
         {
             $this->addFlash('error', 'You do not have permission to edit this comment!');
-            return $this->redirect($this->generateUrl('user_comments'));
+            return $this->redirectToRoute('user_comments');
         }
 
         $form = $this->createFormBuilder($comment)
-            ->add('comment', TextareaType::class)
+            ->add('comment', TextareaType::class, [
+                'attr' => [
+                    'rows' => 3,
+                    'maxlength' => 65535,
+                ],
+            ])
             ->add('submit', SubmitType::class, ['label' => 'Update Comment'])
             ->getForm()
         ;
@@ -63,7 +68,8 @@ class UserController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid())
         {
-            $doctrine->getManager()->flush();
+            $commentRepository->edit($comment);
+
             $this->addFlash('success', 'Comment edited successfully!');
             return $this->redirectToRoute('user_comments');
         }
@@ -76,18 +82,17 @@ class UserController extends AbstractController
     /**
      * @Route("/comments/delete/{id}", name="comment_delete")
      */
-    public function comment_delete(Comment $comment, ManagerRegistry $doctrine)
+    public function comment_delete(Comment $comment, CommentRepository $commentRepository)
     {
-        if($comment->getUser()->getId() != $this->getUser()->getId())
+        if($comment->getUser() != $this->getUser())
         {
             $this->addFlash('error', 'You do not have permission to delete this comment!');
         }
 
         else
         {
-            $entityManager = $doctrine->getManager();
-            $entityManager->remove($comment);
-            $entityManager->flush();
+            $commentRepository->remove($comment);
+            
             $this->addFlash('success', 'Comment deleted successfully!');
         }
 

@@ -25,9 +25,13 @@ class CommentRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function add(Comment $entity, bool $flush = true): void
+    public function add(Comment $comment, $input, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $comment->setDish($input['dish']);
+        $comment->setUser($input['user']);
+        $comment->setComment($input['comment']);
+
+        $this->_em->persist($comment);
         if ($flush) {
             $this->_em->flush();
         }
@@ -37,11 +41,37 @@ class CommentRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function remove(Comment $entity, bool $flush = true): void
+    public function edit(Comment $comment, bool $flush = true): void
     {
-        $this->_em->remove($entity);
         if ($flush) {
             $this->_em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function remove(Comment $comment, bool $flush = true): void
+    {
+        $this->_em->remove($comment);
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function removeAll($comments, bool $flush = true): void
+    {
+        foreach($comments as $comment)
+        {
+            $this->_em->remove($comment);
+            if ($flush) {
+                $this->_em->flush();
+            }
         }
     }
 

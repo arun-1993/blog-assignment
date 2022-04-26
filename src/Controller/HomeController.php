@@ -77,8 +77,9 @@ class HomeController extends AbstractController
             ;
 
             $mailerInterface->send($email);
+            
             $this->addFlash('success', 'Your message was sent. Thank you for contacting us!');
-            return $this->redirect($this->generateUrl('contact'));
+            return $this->redirectToRoute('contact');
         }
 
         return $this->render('home/contact.html.twig', [

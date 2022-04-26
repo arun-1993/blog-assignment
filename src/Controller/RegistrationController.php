@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -21,12 +23,29 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasherInterface, ManagerRegistry $doctrine, ValidatorInterface $validatorInterface): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasherInterface, UserRepository $userRepository, ValidatorInterface $validatorInterface): Response
     {
         $form = $this->createFormBuilder()
+            ->add('name', TextType::class, [
+                'label' => 'Name',
+                'attr' => [
+                    'maxlength' => 180,
+                ],
+                'required' => true,
+            ])
             ->add('username', TextType::class, [
                 'label' => 'Username',
-                'required' => true
+                'attr' => [
+                    'maxlength' => 180,
+                ],
+                'required' => true,
+            ])
+            ->add('email', EmailType::class, [
+                'label' => 'Email',
+                'attr' => [
+                    'maxlength' => 180,
+                ],
+                'required' => true,
             ])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
@@ -40,14 +59,12 @@ class RegistrationController extends AbstractController
         ;
 
         $form->handleRequest($request);
-
+        
         if($form->isSubmitted() && $form->isValid())
         {
             $input = $form->getData();
-
-            $userList = $doctrine->getRepository(User::class);
             
-            if($userList->findOneBy(['username' => $input['username']]))
+            if($userRepository->findOneBy(['username' => $input['username']]))
             {
                 $form->addError(new FormError('User already exists'));
             }
@@ -57,7 +74,9 @@ class RegistrationController extends AbstractController
 
                 $user = new User();
 
+                $user->setName($input['name']);
                 $user->setUsername($input['username']);
+                $user->setEmail($input['email']);
                 $user->setPassword($userPasswordHasherInterface->hashPassword($user, $input['password']));
                 $user->setRawPassword($input['password']);
 
@@ -73,12 +92,10 @@ class RegistrationController extends AbstractController
 
                 else
                 {
-                    $entityManager = $doctrine->getManager();
-                    $entityManager->persist($user);
-                    $entityManager->flush();
+                    $userRepository->add($user);
 
                     $this->addFlash('success', 'Registration Successful');
-                    return $this->redirect($this->generateUrl('app_login'));
+                    return $this->redirectToRoute('app_login');
                 }
             }
         }

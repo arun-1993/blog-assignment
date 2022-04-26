@@ -36,6 +36,9 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/user, roles: ROLE_USER }
+        - { path: ^/dish/create, roles: ROLE_USER }
+        - { path: ^/dish/edit, roles: ROLE_USER }
+        - { path: ^/dish/delete, roles: ROLE_USER }
         # - { path: ^/dish_create, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/dish_delete, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/dish_edit, roles: IS_AUTHENTICATED_FULLY }
