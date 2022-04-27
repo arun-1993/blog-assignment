@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ChangePasswordFormType;
 use App\Form\ResetPasswordRequestFormType;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -75,7 +76,7 @@ class ResetPasswordController extends AbstractController
     /**
      * @Route("/reset/{token}", name="reset_password")
      */
-    public function reset(Request $request, UserPasswordHasherInterface $userPasswordHasher, ValidatorInterface $validatorInterface, string $token = null): Response
+    public function reset(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasher, ValidatorInterface $validator, string $token = null): Response
     {
         if ($token) {
             // We store the token in session and remove it from the URL, to avoid the URL being
@@ -107,18 +108,8 @@ class ResetPasswordController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // A password reset token should be used only once, remove it.
-
-            // Encode(hash) the plain password, and set it.
-            $encodedPassword = $userPasswordHasher->hashPassword(
-                $user,
-                $form->get('plainPassword')->getData()
-            );
-
-            $user->setPassword($encodedPassword);
-            $user->setRawPassword($form->get('plainPassword')->getData());
-
-            $errors = $validatorInterface->validate($user);
+            $plainPassword = $form->get('plainPassword')->getData();
+            $errors = $userRepository->edit($user, $plainPassword, $userPasswordHasher, $validator);
             
             if(count($errors) > 0)
             {
@@ -130,15 +121,11 @@ class ResetPasswordController extends AbstractController
 
             else
             {
-                $this->entityManager->flush();
                 $this->resetPasswordHelper->removeResetRequest($token);
                 $this->cleanSessionAfterReset();
                 $this->addFlash('success', 'Password Successfully Reset!');
                 return $this->redirectToRoute('app_login');
             }
-
-            // The session is cleaned up after the password has been changed.
-            
         }
 
         return $this->render('reset_password/reset.html.twig', [

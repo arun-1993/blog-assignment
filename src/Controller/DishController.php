@@ -81,7 +81,7 @@ class DishController extends AbstractController
         $filter = $this->createFormBuilder()
             ->add('date_filter', DateType::class, [
                 'widget' => 'single_text',
-                'required' => true,
+                'required' => false,
                 'label' => 'Date',
             ])
             ->add('filter_submit', SubmitType::class, ['label' => 'Filter'])
@@ -133,6 +133,7 @@ class DishController extends AbstractController
             else
             {
                 $file_name = 'default.png';
+
                 $this->addFlash('error', 'There was no image or image type was not supported. So the default image was chosen.');
             }
 
@@ -159,6 +160,8 @@ class DishController extends AbstractController
             $this->addFlash('error', 'You do not have permission to edit this dish!');
             return $this->redirectToRoute('user_list');
         }
+
+        // $form = $this->createForm(DishType::class, $dish);
 
         $form = $this->createFormBuilder()
             ->add('name', TextType::class, [
@@ -191,8 +194,6 @@ class DishController extends AbstractController
             ->add('update', SubmitType::class, ['label' => 'Update Dish'])
             ->getForm()
         ;
-
-        // $form = $this->createForm(DishType::class, $dish);
 
         $form->handleRequest($request);
 
@@ -252,9 +253,9 @@ class DishController extends AbstractController
     /**
      * @Route("/recent", name="recent")
      */
-    public function recent(ManagerRegistry $doctrine): Response
+    public function recent(DishRepository $dishRepository): Response
     {
-        $dishes = $doctrine->getRepository(Dish::class)->getRecentDishes();
+        $dishes = $dishRepository->getRecentDishes();
 
         return $this->render('_recent_dishes.html.twig', [
             'dishes' => $dishes
@@ -271,46 +272,5 @@ class DishController extends AbstractController
         return $this->render('_categories_list.html.twig', [
             'categories' => $categories
         ]);
-    }
-
-    /**
-     * @Route("/search_bar", name="search_bar")
-     */
-    public function search_bar(Request $request): Response
-    {
-        $search = $this->createFormBuilder()
-            ->add('general_search', TextType::class, [
-                'label' => false,
-                'required' => true,
-                'attr' => [
-                    'placeholder' => 'Search',
-                    'style' => 'width: 200px'
-                ],
-            ])
-            ->add('search_submit', SubmitType::class, [
-                'label' => 'Search',
-            ])
-            ->getForm()
-        ;
-
-        $search->handleRequest($request);
-
-        if($search->isSubmitted() && $search->isValid())
-        {
-            dump($search);
-            return $this->redirectToRoute('dish_search');
-        }
-
-        return $this->render('_search_dishes.html.twig', [
-            'search' => $search->createView(),
-        ]);
-    }
-
-    /**
-     * @Route("/search/{search}", name="search")
-     */
-    public function search(DishRepository $dishRepository, CategoryRepository $categoryRepository, string $search = ''): Response
-    {
-        return new Response($search);
     }
 }

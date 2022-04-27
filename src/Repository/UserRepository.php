@@ -7,9 +7,11 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -28,12 +30,46 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function add(User $user, bool $flush = true): void
+    public function add($input, UserPasswordHasherInterface $userPasswordHasherInterface, ValidatorInterface $validatorInterface, bool $flush = true)
     {
-        $this->_em->persist($user);
-        if ($flush) {
-            $this->_em->flush();
+        $user = new User();
+        
+        $user->setRawPassword($input['password']);
+
+        $errors = $validatorInterface->validate($user);
+
+        if(count($errors) === 0)
+        {
+            $user->setName($input['name']);
+            $user->setUsername($input['username']);
+            $user->setEmail($input['email']);
+            $user->setPassword($userPasswordHasherInterface->hashPassword($user, $input['password']));
+
+            $this->_em->persist($user);
+            if ($flush) {
+                $this->_em->flush();
+            }
         }
+
+        return $errors;
+    }
+
+    public function edit(User $user, $plainPassword, UserPasswordHasherInterface $userPasswordHasherInterface, ValidatorInterface $validatorInterface, bool $flush = true)
+    {   
+        $user->setRawPassword($plainPassword);
+
+        $errors = $validatorInterface->validate($user);
+
+        if(count($errors) === 0)
+        {
+            $user->setPassword($userPasswordHasherInterface->hashPassword($user, $plainPassword));
+
+            if ($flush) {
+                $this->_em->flush();
+            }
+        }
+
+        return $errors;
     }
 
     /**

@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationController extends AbstractController
@@ -23,7 +24,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasherInterface, UserRepository $userRepository, ValidatorInterface $validatorInterface): Response
+    public function register(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasherInterface, ValidatorInterface $validatorInterface): Response
     {
         $form = $this->createFormBuilder()
             ->add('name', TextType::class, [
@@ -51,6 +52,7 @@ class RegistrationController extends AbstractController
                 'type' => PasswordType::class,
                 'invalid_message' => 'Passwords do not match',
                 'required' => true,
+                'constraints' => [new Length(['min' => 8])],
                 'first_options' => ['label' => 'Password'],
                 'second_options' => ['label' => 'Confirm Password']
             ])
@@ -71,16 +73,7 @@ class RegistrationController extends AbstractController
 
             else
             {
-
-                $user = new User();
-
-                $user->setName($input['name']);
-                $user->setUsername($input['username']);
-                $user->setEmail($input['email']);
-                $user->setPassword($userPasswordHasherInterface->hashPassword($user, $input['password']));
-                $user->setRawPassword($input['password']);
-
-                $errors = $validatorInterface->validate($user);
+                $errors = $userRepository->add($input, $userPasswordHasherInterface, $validatorInterface);
                 
                 if(count($errors) > 0)
                 {
@@ -92,8 +85,6 @@ class RegistrationController extends AbstractController
 
                 else
                 {
-                    $userRepository->add($user);
-
                     $this->addFlash('success', 'Registration Successful');
                     return $this->redirectToRoute('app_login');
                 }

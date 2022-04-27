@@ -92,13 +92,25 @@ class DishRepository extends ServiceEntityRepository
      */
     public function getByDate($date): array
     {
-        $query = $this->_em
-            ->createQuery(
-                'SELECT dish FROM App\Entity\Dish dish WHERE dish.createdOn >= :date_start AND dish.createdOn <= :end_date ORDER BY dish.name ASC'
-            )
-            ->setParameter('date_start', $date->format('Y-m-d 00:00:00'))
-            ->setParameter('end_date', $date->format('Y-m-d 23:59:59'))
-        ;
+        if(isset($date))
+        {
+            $query = $this->_em
+                ->createQuery(
+                    'SELECT dish FROM App\Entity\Dish dish WHERE dish.createdOn >= :date_start AND dish.createdOn <= :end_date ORDER BY dish.name ASC'
+                )
+                ->setParameter('date_start', $date->format('Y-m-d 00:00:00'))
+                ->setParameter('end_date', $date->format('Y-m-d 23:59:59'))
+            ;
+        }
+
+        else
+        {
+            $query = $this->_em
+                ->createQuery(
+                    'SELECT dish FROM App\Entity\Dish dish ORDER BY dish.name ASC'
+                )
+            ;
+        }
 
         return $query->getResult();
     }

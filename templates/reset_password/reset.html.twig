@@ -1,10 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reset your password{% endblock %}
-
 {% block body %}
 <div class="container">
     <h1>Reset your password</h1>
+    <br />
     {% for error in errors %}
         <div class="alert alert-danger">
             <h3>{{ error.message }}</h3>

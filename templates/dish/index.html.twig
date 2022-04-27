@@ -17,6 +17,9 @@
 						<div class="col">
 							{{ form_row(filter.filter_submit) }} 
 						</div>
+						<div class="col">
+							<a class="btn btn-info" href="{{ app.request.uri }}">Reset</a>
+						</div>
 					</div>
 					{{ form_end(filter) }}
 			</div>
@@ -43,7 +46,7 @@
 							<a class="btn btn-outline-danger btn-sm" href="{{ path('dish_single',{id: dish.id}) }}" role="button">Read More</a>
 						</p>
 						<br />
-						<div class="text-justify">{{ dish.description|slice(0, 200) }}</div>
+						<div class="text-justify">{{ dish.description|slice(0, 160) }}...</div>
 					</div>
 				</div>
             {% endfor %}
